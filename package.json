@@ -1,0 +1,33 @@
+{
+  "name": "repo-cloud",
+  "version": "0.0.1",
+  "description": "Github repositories in a word cloud",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "build": "browserify repo-cloud.js -o index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrejewski/repo-cloud.git"
+  },
+  "keywords": [
+    "github",
+    "repo",
+    "word",
+    "cloud",
+    "tag"
+  ],
+  "author": "Chris Andrejewski <christopher.andrejewski@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/andrejewski/repo-cloud/issues"
+  },
+  "homepage": "https://github.com/andrejewski/repo-cloud#readme",
+  "devDependencies": {
+    "browserify": "^13.0.0",
+    "d3": "^3.5.14",
+    "d3-cloud": "^1.2.1",
+    "superagent": "^1.7.2"
+  }
+}
