@@ -3,22 +3,32 @@ var d3 = require('d3');
 var cloud = require('d3-cloud');
 var request = require('superagent');
 
-function getUserRepos(username, next) {
+function allRepos(username, next, n) {
   request
     .get('https://api.github.com/users/'+username+'/repos')
-    .query({per_page: 100})
+    .query({page: n || 1, per_page: 100})
     .end(function(error, res) {
       if(error) return next(error);
-      var repos = res.body.map(function(repo) {
-        return {
-          name: repo.name,
-          html_url: repo.html_url,
-          stars: repo.stargazers_count,
-          forks: repo.forks_count,
-        };
-      });
-      next(null, repos);
+      if(res.body.length < 100) return next(null, res.body);
+      allRepos(username, function(error, repos) {
+        if(error) return next(error);
+        next(null, res.body.concat(repos));
+      }, (n||1)+1);
     });
+}
+
+function getUserRepos(username, next) {
+  allRepos(username, function(error, repos) {
+    if(error) return next(error);
+    next(null, repos.map(function(repo) {
+      return {
+        name: repo.name,
+        html_url: repo.html_url,
+        stars: repo.stargazers_count,
+        forks: repo.forks_count,
+      };
+    }));
+  });
 }
 
 var $cloud = document.getElementById('cloud');
@@ -63,11 +73,15 @@ function draw(container, repos) {
   };
   // console.log(size); return;
 
+  var star_avg = repos
+    .map(function(r) { return r.stars; })
+    .reduce(function(x,y) { return x+y;}, 0) / repos.length;
+
   var layout = cloud()
     .size([size.width, size.height])
     // .size([1, 1])
     .words(repos.map(function(repo) {
-      var size = 20 + Math.ceil(repo.stars + (1.5 * repo.forks));
+      var size = 20 + Math.ceil((1.5 * repo.stars) / star_avg);
       return {text: repo.name, size: size, href: repo.html_url};
     }))
     .padding(5)
@@ -101,6 +115,7 @@ function draw(container, repos) {
   }
 }
 
-updateCloud();
+$username.value = window.location.hash.slice(1) || 'andrejewski';
 $username.onchange = updateCloud;
+updateCloud();
 
